@@ -1,6 +1,7 @@
 
 public class Persona {
 	protected int edad;
+	//Prueba
 
 	public Persona(int edad) {
 		super();
