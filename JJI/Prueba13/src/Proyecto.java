@@ -1,9 +1,9 @@
-
-import java.awt.Component;
-import java.awt.GridLayout;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import javax.swing.*;
 
 public class Proyecto {
@@ -58,12 +58,29 @@ public class Proyecto {
         }
 
         private void agregarProducto() {
-            String nombre = JOptionPane.showInputDialog("Nombre del producto:");
-            double precio = Double.parseDouble(JOptionPane.showInputDialog("Precio del producto:"));
-            int cantidad = Integer.parseInt(JOptionPane.showInputDialog("Cantidad: "));
-            stockProductos.put(nombre, crearProductoInfo(cantidad, precio));
-            JOptionPane.showMessageDialog(null, "Producto agregado a la base de datos.");
+            JPanel panel = new JPanel(new GridLayout(3, 2));
+            JTextField nombreField = new JTextField();
+            JTextField precioField = new JTextField();
+            JTextField cantidadField = new JTextField();
+
+            panel.add(new JLabel("Nombre del producto:"));
+            panel.add(nombreField);
+            panel.add(new JLabel("Precio del producto:"));
+            panel.add(precioField);
+            panel.add(new JLabel("Cantidad:"));
+            panel.add(cantidadField);
+
+            int result = JOptionPane.showConfirmDialog(null, panel, "Agregar Producto",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result == JOptionPane.OK_OPTION) {
+                String nombre = nombreField.getText();
+                double precio = Double.parseDouble(precioField.getText());
+                int cantidad = Integer.parseInt(cantidadField.getText());
+                stockProductos.put(nombre, crearProductoInfo(cantidad, precio));
+                JOptionPane.showMessageDialog(null, "Producto agregado a la base de datos.");
+            }
         }
+
 
         private Map<String, Object> crearProductoInfo(int cantidad, double precio) {
             Map<String, Object> productoInfo = new HashMap<>();
@@ -96,6 +113,7 @@ public class Proyecto {
 
         private void comprarProductos(JFrame frame) {
             double totalPagar = 0;
+            double totalPagar2 = 0;
 
             for (Component component : frame.getContentPane().getComponents()) {
                 if (component instanceof JCheckBox) {
@@ -104,14 +122,29 @@ public class Proyecto {
                         String producto = checkBox.getText();
                         Map<String, Object> productoInfo = stockProductos.get(producto);
                         double precio = (double) productoInfo.get("precio");
-                        totalPagar += precio;
+                        String cantCompraProd = JOptionPane.showInputDialog(null, "Cantidad"
+                        		+ " del producto " + producto + ":");
+                        if (cantCompraProd != null) {
+                            int cantidad = Integer.parseInt(cantCompraProd);
+                            int cantidadActual = (int) productoInfo.get("cantidad");
+                            if (cantidad <= cantidadActual) {
+                                productoInfo.put("cantidad", cantidadActual - cantidad);
+                                totalPagar += precio * cantidad;
+                                double iva= 0.21*precio;
+								totalPagar2 += (precio+iva) * cantidad;
+                            } else {
+                                JOptionPane.showMessageDialog(null, "No hay suficiente stock de " + producto + ".");
+                            }
+                        }
                     }
                 }
             }
 
             DecimalFormat df = new DecimalFormat("#.##");
-            JOptionPane.showMessageDialog(null, "Total a pagar: €" + df.format(totalPagar));
-
+            JOptionPane.showMessageDialog(null, "Total a pagar (sin IVA):"
+            		+ " €" + df.format(totalPagar));
+            JOptionPane.showMessageDialog(null, "Total a pagar (con IVA):"
+            		+ " €" + df.format(totalPagar2));
             frame.dispose();
         }
 
